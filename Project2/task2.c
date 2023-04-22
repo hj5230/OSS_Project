@@ -3,79 +3,73 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
+#define LIMIT 5
 
-#define NUM_PHILOSOPHERS 5
-#define THINKING 0
-#define HUNGRY 1
-#define EATING 2
+sem_t chopsticks[LIMIT];
+pthread_t philosophers[LIMIT];
 
-sem_t mutex;
-sem_t S[NUM_PHILOSOPHERS];
-int state[NUM_PHILOSOPHERS];
+void *philosopher(void *arg)
+{
+    int id = (int)arg;
 
-void test(int philosopher) {
-    if (state[philosopher] == HUNGRY &&
-        state[(philosopher + 4) % NUM_PHILOSOPHERS] != EATING &&
-        state[(philosopher + 1) % NUM_PHILOSOPHERS] != EATING) {
-        state[philosopher] = EATING;
-        sleep(2);
-        printf("Philosopher %d takes chopsticks %d and %d\n",
-               philosopher + 1, philosopher + 1,
-               (philosopher + 1) % NUM_PHILOSOPHERS + 1);
-        printf("Philosopher %d is eating\n", philosopher + 1);
-        sem_post(&S[philosopher]);
-    }
-}
+    while(1)
+    {
+        printf("Philosopher %d is thinking...\n", id);
+        usleep(rand() % 5000000);
 
-void take_chopsticks(int philosopher) {
-    sem_wait(&mutex);
-    state[philosopher] = HUNGRY;
-    printf("Philosopher %d is hungry\n", philosopher + 1);
-    test(philosopher);
-    sem_post(&mutex);
-    sem_wait(&S[philosopher]);
-    sleep(1);
-}
+        // Try to pick up left chopstick
+        sem_wait(&chopsticks[id]);
+        printf("Philosopher %d picked up left chopstick\n", id);
 
-void put_chopsticks(int philosopher) {
-    sem_wait(&mutex);
-    state[philosopher] = THINKING;
-    printf("Philosopher %d puts down chopsticks %d and %d\n",
-           philosopher + 1, philosopher + 1,
-           (philosopher + 1) % NUM_PHILOSOPHERS + 1);
-    printf("Philosopher %d is thinking\n", philosopher + 1);
-    test((philosopher + 4) % NUM_PHILOSOPHERS);
-    test((philosopher + 1) % NUM_PHILOSOPHERS);
-    sem_post(&mutex);
-}
+        // Introduce a small delay to avoid deadlocks
+        usleep(1000);
 
-void *philosopher(void *num) {
-    int *philosopher_num = num;
-    while (1) {
-        sleep(1);
-        take_chopsticks(*philosopher_num);
-        sleep(0);
-        put_chopsticks(*philosopher_num);
-    }
-}
+        // Try to pick up right chopstick
+        sem_wait(&chopsticks[(id + 1) % LIMIT]);
+        printf("Philosopher %d picked up right chopstick\n", id);
 
-int main() {
-    pthread_t thread_id[NUM_PHILOSOPHERS];
-    sem_init(&mutex, 0, 1);
+        printf("Philosopher %d is having meal\n", id);
+        usleep(rand() % 5000000);
 
-    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
-        sem_init(&S[i], 0, 0);
+        // Put down left chopstick
+        sem_post(&chopsticks[id]);
+        printf("Philosopher %d put down left chopstick\n", id);
+
+        // Put down right chopstick
+        sem_post(&chopsticks[(id + 1) % LIMIT]);
+        printf("Philosopher %d put down right chopstick\n", id);
     }
 
-    int philosopher_nums[NUM_PHILOSOPHERS];
-    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
-        philosopher_nums[i] = i;
-        pthread_create(&thread_id[i], NULL, philosopher, &philosopher_nums[i]);
-        printf("Philosopher %d is thinking\n", i + 1);
+    printf("Philosopher %d has finished eating\n", id);
+    return NULL;
+}
+
+int main()
+{
+    srand(time(NULL));
+
+    // Initialize the semaphores representing chopsticks
+    for (int i = 0; i < LIMIT; i++)
+    {
+        sem_init(&chopsticks[i], 0, 1);
     }
 
-    for (int i = 0; i < NUM_PHILOSOPHERS; i++) {
-        pthread_join(thread_id[i], NULL);
+    // Create threads for each philosopher
+    for (int i = 0; i < LIMIT; i++)
+    {
+        pthread_create(&philosophers[i], NULL, philosopher, (void *)i);
+    }
+
+    // Wait for all philosopher threads to finish
+    for (int i = 0; i < LIMIT; i++)
+    {
+        pthread_join(philosophers[i], NULL);
+    }
+
+    // Destroy the semaphores representing chopsticks
+    for (int i = 0; i < LIMIT; i++)
+    {
+        sem_destroy(&chopsticks[i]);
     }
 
     return 0;

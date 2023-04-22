@@ -4,6 +4,7 @@
 #include <semaphore.h>
 
 #define BUFFER_SIZE 5
+#define Max 20
 
 sem_t empty;
 sem_t full;
@@ -14,8 +15,10 @@ int in = 0;
 int out = 0;
 
 void *producer(void *param) {
-    int product = 0;
-    while (1) {
+    int product = 0, counter = 0;
+    while (counter < Max) {
+        counter++;
+        
         sem_wait(&empty);
         sem_wait(&mutex);
 
@@ -30,7 +33,10 @@ void *producer(void *param) {
 }
 
 void *consumer(void *param) {
-    while (1) {
+    int counter = 0;
+    while (counter < Max) {
+        counter++;
+
         sem_wait(&full);
         sem_wait(&mutex);
 

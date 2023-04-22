@@ -77,8 +77,7 @@ void FIFO() /*FIFO page replacement algorithem*/
     printf("The number of page faults of FIFO is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f", missing_page_count, missing_page_count / (float)TOTAL_INSERT, missing_page_count - PM_PAGE, (missing_page_count - PM_PAGE) / (float)TOTAL_INSERT);
 }
 
-void LRU()
-{
+void LRU() {
     int k = 0;
     int i;
     int sum = 0;
@@ -136,6 +135,7 @@ void LRU()
     }
     printf("The number of page faults of LRU is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f\n", missing_page_count, missing_page_count / (float)TOTAL_INSERT, missing_page_count - 4, (missing_page_count - 4) / (float)TOTAL_INSERT);
 }
+
 void OPT()
 {
     int k = 0;
@@ -201,7 +201,7 @@ void OPT()
 int main()
 {
     int a;
-    printf("Please choose page replacement algorithm：1.FIFO\t2.LRU\t3.OPT\t0. quit\n");
+    printf("Please choose page replacement algorithm: 1.FIFO 2.LRU 3.OPT 0. quit\n");
     do
     {
         scanf("%d", &a);
