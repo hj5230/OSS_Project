@@ -3,50 +3,41 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#define BUFFER_SIZE 5
-#define Max 20
-
-sem_t empty;
-sem_t full;
-sem_t mutex;
+#define BUFFER_SIZE 10
 
 int buffer[BUFFER_SIZE];
-int in = 0;
-int out = 0;
+int in = 0, out = 0;
 
-void *producer(void *param) {
-    int product = 0, counter = 0;
-    while (counter < Max) {
-        counter++;
-        
+sem_t empty, full, mutex;
+
+void *producer(void *arg) {
+    for (int i = 0; i < 10; i++) {
         sem_wait(&empty);
         sem_wait(&mutex);
 
-        buffer[in] = product;
-        printf("Produced: %d\n", product);
-        product++;
+        buffer[in] = i;
+        printf("Producer produced item %d at position %d\n", i, in);
         in = (in + 1) % BUFFER_SIZE;
 
         sem_post(&mutex);
         sem_post(&full);
     }
+    return NULL;
 }
 
-void *consumer(void *param) {
-    int counter = 0;
-    while (counter < Max) {
-        counter++;
-
+void *consumer(void *arg) {
+    for (int i = 0; i < 10; i++) {
         sem_wait(&full);
         sem_wait(&mutex);
 
-        int product = buffer[out];
-        printf("Consumed: %d\n", product);
+        int item = buffer[out];
+        printf("Consumer consumed item %d from position %d\n", item, out);
         out = (out + 1) % BUFFER_SIZE;
 
         sem_post(&mutex);
         sem_post(&empty);
     }
+    return NULL;
 }
 
 int main() {
