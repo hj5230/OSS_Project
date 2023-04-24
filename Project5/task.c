@@ -195,7 +195,9 @@ void OPT()
         current_time++;
         sum++;
     }
-    printf("The number of page faults of OPT is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f\n", missing_page_count, missing_page_count / (float)TOTAL_INSERT, missing_page_count - 4, (missing_page_count - 4) / (float)TOTAL_INSERT);
+    printf("The number of page faults of OPT is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f\n",
+    missing_page_count, missing_page_count / (float)TOTAL_INSERT,
+    missing_page_count - 4, (missing_page_count - 4) / (float)TOTAL_INSERT);
 }
 
 int main()
@@ -213,11 +215,11 @@ int main()
             break;
         case 2:
             init_data();
-            LRU();
+            LRU(); // present the LRU solution
             break;
         case 3:
             init_data();
-            OPT();
+            OPT(); // present the OPT solution
             break;
         }
     } while (a != 0);
