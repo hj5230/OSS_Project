@@ -1,3 +1,9 @@
+/*
+Project 2 Process synchronization implementation
+2 The dining-philosophers problem
+below is the C program to solve the dining-philosophers problem based on semaphores
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>

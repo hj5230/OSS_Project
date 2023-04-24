@@ -1,9 +1,16 @@
+/*
+Project 5 Simulate the page frame replacement
+Complete the LRU and OPT algorithm code
+below is code for this project
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #define VM_PAGE 7       /*Number of virtual pages*/
 #define PM_PAGE 4       /* Number of memory blocks allocated to the job */
 #define TOTAL_INSERT 18 /*Number of virtual page replacements*/
+
 typedef struct
 {
     int vmn;
@@ -77,127 +84,127 @@ void FIFO() /*FIFO page replacement algorithem*/
     printf("The number of page faults of FIFO is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f", missing_page_count, missing_page_count / (float)TOTAL_INSERT, missing_page_count - PM_PAGE, (missing_page_count - PM_PAGE) / (float)TOTAL_INSERT);
 }
 
+// Implemented LRU algorithm below
 void LRU() {
-    int k = 0;
-    int i;
-    int sum = 0;
-    int missing_page_count = 0;
-    int current_time = 0;
-    bool isleft = true; /* Whether there are remaining physical blocks */
-    while (sum < TOTAL_INSERT)
+    int idx, physMemIdx = 0, totalCount = 0, currTime = 0, missedPageCount = 0;
+    bool hasFreeSpace = true; // is there are remaining physical blocks
+    while (totalCount < TOTAL_INSERT) // until all pages have been inserted
     {
-        if (page_table[vpage_arr[sum] - 1].exist == 0)
+        if (page_table[vpage_arr[totalCount] - 1].exist == 0) // if the page is not present in physical memory
         {
-            missing_page_count++;
-            if (k < 4)
+            ++missedPageCount;
+            if (physMemIdx < 4 && ppage_bitmap[physMemIdx] == NULL) // check if there is free space in physical memory
             {
-                if (ppage_bitmap[k] == NULL) /*find a free block*/
-                {
-                    ppage_bitmap[k] = &page_table[vpage_arr[sum] - 1];
-                    ppage_bitmap[k]->exist = 1;
-                    ppage_bitmap[k]->pmn = k;
-                    ppage_bitmap[k]->time = current_time;
-                    k++;
-                }
+                /* add the page to physical memory */
+                ppage_bitmap[physMemIdx] = &page_table[vpage_arr[totalCount] - 1];
+                ppage_bitmap[physMemIdx]->exist = 1;
+                ppage_bitmap[physMemIdx]->pmn = physMemIdx;
+                ppage_bitmap[physMemIdx]->time = currTime;
+                ++physMemIdx;
             }
             else
             {
-                int temp = ppage_bitmap[0]->time;
+                /* replace the least recently used page in physical memory */
+                int leastRecentTime;
+                leastRecentTime = ppage_bitmap[0]->time;
                 int j = 0;
-                for (i = 0; i < PM_PAGE; i++)
+                for (idx = 0; idx < PM_PAGE; ++idx) // find the page with least recently used time
                 {
-                    if (ppage_bitmap[i]->time < temp)
+                    if (ppage_bitmap[idx]->time < leastRecentTime)
                     {
-                        temp = ppage_bitmap[i]->time;
-                        j = i;
+                        leastRecentTime = ppage_bitmap[idx]->time;
+                        j = idx;
                     }
                 }
-                ppage_bitmap[j]->exist = 0;
-                ppage_bitmap[j] = &page_table[vpage_arr[sum] - 1]; /*update page table*/
+                ppage_bitmap[j]->exist = 0; // remove the page from physical memory
+                ppage_bitmap[j] = &page_table[vpage_arr[totalCount] - 1]; // replace with new page
                 ppage_bitmap[j]->exist = 1;
                 ppage_bitmap[j]->pmn = j;
-                ppage_bitmap[j]->time = current_time;
+                ppage_bitmap[j]->time = currTime;
             }
         }
-        else
+        else // the page is present in physical memory
         {
-            for (i = 0; i < PM_PAGE; i++)
+            // Update the time of the page
+            for (idx = 0; idx < PM_PAGE; ++idx)
             {
-                if (ppage_bitmap[i]->vmn == page_table[vpage_arr[sum] - 1].vmn)
+                if (ppage_bitmap[idx]->vmn == page_table[vpage_arr[totalCount] - 1].vmn)
                 {
-                    ppage_bitmap[i]->time = current_time;
+                    ppage_bitmap[idx]->time = currTime;
                     break;
                 }
             }
         }
-        current_time++;
-        sum++;
+        ++currTime; // Increment current time
+        ++totalCount; // Increment total page count
     }
-    printf("The number of page faults of LRU is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f\n", missing_page_count, missing_page_count / (float)TOTAL_INSERT, missing_page_count - 4, (missing_page_count - 4) / (float)TOTAL_INSERT);
+    printf("LRU:\nPage fault:%d\tPage fault rate:%f\nReplacement:%d\tReplacement rate:%f\n", missedPageCount, missedPageCount / (float)TOTAL_INSERT, missedPageCount - 4, (missedPageCount - 4) / (float)TOTAL_INSERT);
 }
 
+// Implemented OPT algorithm below
 void OPT()
 {
-    int k = 0;
-    int i;
-    int sum = 0;
-    int missing_page_count = 0;
-    int current_time = 0;
-    bool isleft = true; /* Whether there are remaining physical blocks */
-    while (sum < TOTAL_INSERT)
+    int physMemIdx = 0; // index for physical memory
+    int idx; // index for loop
+    int totalCount = 0; // total number of pages inserted
+    int missedPageCount = 0; // number of page faults
+    int currTime = 0; // current time
+    bool hasFreeSpace = true; /* whether there are remaining physical blocks */
+    while (totalCount < TOTAL_INSERT) // loop until all pages have been inserted
     {
-        if (page_table[vpage_arr[sum] - 1].exist == 0)
+        if (page_table[vpage_arr[totalCount] - 1].exist == 0) // check if the page is not present in physical memory
         {
-            missing_page_count++;
-            if (k < 4)
+            ++missedPageCount; // increment page fault count
+            if (physMemIdx < 4 && ppage_bitmap[physMemIdx] == NULL) // check if there is free space in physical memory
             {
-                if (ppage_bitmap[k] == NULL) /*find a free block*/
-                {
-                    ppage_bitmap[k] = &page_table[vpage_arr[sum] - 1];
-                    ppage_bitmap[k]->exist = 1;
-                    ppage_bitmap[k]->pmn = k;
-                    ppage_bitmap[k]->time = current_time;
-                    k++;
-                }
+                // add the page to physical memory
+                ppage_bitmap[physMemIdx] = &page_table[vpage_arr[totalCount] - 1];
+                ppage_bitmap[physMemIdx]->exist = 1;
+                ppage_bitmap[physMemIdx]->pmn = physMemIdx;
+                ppage_bitmap[physMemIdx]->time = currTime;
+                ++physMemIdx; // increment physical memory index
             }
             else
             {
-                int max_dist = 0;
+                // find the page with the maximum distance to next reference
+                int maxDistance = 0;
                 int j = 0;
-                for (i = 0; i < PM_PAGE; i++)
+                for (idx = 0; idx < PM_PAGE; ++idx)
                 {
-                    int temp_sum = sum;
-                    while (temp_sum < TOTAL_INSERT && page_table[vpage_arr[temp_sum] - 1].vmn != ppage_bitmap[i]->vmn)
+                    int tempCount;
+                    tempCount = totalCount;
+                    while (tempCount < TOTAL_INSERT && page_table[vpage_arr[tempCount] - 1].vmn != ppage_bitmap[idx]->vmn)
                     {
-                        temp_sum++;
+                        ++tempCount;
                     }
-                    if (temp_sum == TOTAL_INSERT)
+                    if (tempCount == TOTAL_INSERT)
                     {
-                        j = i;
+                        j = idx;
                         break;
                     }
                     else
                     {
-                        if (temp_sum - sum > max_dist)
+                        if (tempCount - totalCount > maxDistance)
                         {
-                            max_dist = temp_sum - sum;
-                            j = i;
+                            maxDistance = tempCount - totalCount;
+                            j = idx;
                         }
                     }
                 }
-                ppage_bitmap[j]->exist = 0;
-                ppage_bitmap[j] = &page_table[vpage_arr[sum] - 1]; /*update page table*/
+                ppage_bitmap[j]->exist = 0; // remove the page from physical memory
+                ppage_bitmap[j] = &page_table[vpage_arr[totalCount] - 1]; // replace with new page
                 ppage_bitmap[j]->exist = 1;
                 ppage_bitmap[j]->pmn = j;
-                ppage_bitmap[j]->time = current_time;
+                ppage_bitmap[j]->time = currTime;
             }
         }
-        current_time++;
-        sum++;
+        ++currTime; // increment current time
+        ++totalCount; // increment total page count
     }
-    printf("The number of page faults of OPT is:%d\t Page fault rate:%f\t The number of replacement:%d\tReplacement rate:%f\n",
-    missing_page_count, missing_page_count / (float)TOTAL_INSERT,
-    missing_page_count - 4, (missing_page_count - 4) / (float)TOTAL_INSERT);
+    // Print statistics
+    printf("OPT:\nPage fault:%d\tPage fault rate:%f\nReplacement:%d\tReplacement rate:%f\n",
+    missedPageCount, missedPageCount / (float)TOTAL_INSERT,
+    missedPageCount - 4, (missedPageCount - 4) / (float)TOTAL_INSERT);
 }
 
 int main()
