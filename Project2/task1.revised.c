@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <unistd.h>
-
+// revised
 #define BUFFER_SIZE 10
 
 int buffer[BUFFER_SIZE];

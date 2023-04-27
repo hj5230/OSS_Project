@@ -65,3 +65,5 @@ int main()
     sem_destroy(&mutex); // Destroy the 'mutex' semaphore
     return 0;
 }
+
+// bruh
