@@ -21,7 +21,7 @@ void *producer(void *arg)
     // run producer indefinitely to illustrate
     while (true)
     {
-        usleep(1000000);                                            // sleep for 1s to observe outputs
+        usleep(500000);                                            // sleep for 1s to observe outputs
         sem_wait(&empty);                                           // wait for an empty slot in the buffer
         sem_wait(&mutex);                                           // acquire the mutex lock to ensure exclusive access to the buffer
         slot[i] = i;                                                // place the produced item in the buffer
@@ -38,7 +38,7 @@ void *consumer(void *arg)
     // run consumer indefinitely to illustrate
     while (true)
     {
-        usleep(1000000);                                                 // sleep for 1s to observe outputs
+        usleep(500000);                                                 // sleep for 1s to observe outputs
         sem_wait(&full);                                                 // wait for a full slot in the buffer (i.e., an item to consume)
         sem_wait(&mutex);                                                // acquire the mutex lock to ensure exclusive access to the buffer
         int item = slot[o];                                              // retrieve the item from the buffer
