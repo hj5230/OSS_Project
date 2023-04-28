@@ -27,11 +27,12 @@ void *producer(void *arg)
     int item;
     while (1)
     {
-        item = rand() % 100; // assign a random items
+        item = rand() % 20; // assign a random items
         sem_wait(&empty);    // wait for an empty slot
         sem_wait(&mutex);    // wait for the mutual exclusion semaphore
         buffer[i] = item;                                              // insertong item into buffer
-        printf("Producer produced item %d at position %d\n", item, i); // print producing result
+        printf("Producer: Item %d produced and stored at slot %d of buffer pool.\n", item, i + 1); // print producing result
+        printf("|%d|%d|%d|%d|%d|\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
         i = (i + 1) % N;                                               // renew input index
         sem_post(&mutex); // Signal the mutual exclusion semaphore
         sem_post(&full);  // Signal that a new full slot is available
@@ -47,7 +48,9 @@ void *consumer(void *arg)
         sem_wait(&full);  // wait for a full slot
         sem_wait(&mutex); // wait for the mutual exclusion semaphore
         item = buffer[o];                                                // get item from the buffer
-        printf("Consumer consumed item %d from position %d\n", item, o); // print consuming result
+        buffer[o] = 0;
+        printf("Consumer: Item %d at slot %d of buffer pool consumed.\n", item, o + 1); // print consuming result
+        printf("|%d|%d|%d|%d|%d|\n", buffer[0], buffer[1], buffer[2], buffer[3], buffer[4]);
         o = (o + 1) % N;                                                 // renew output index
         sem_post(&mutex); // signal the mutual exclusion semaphore
         sem_post(&empty); // signal that a new empty slot is available

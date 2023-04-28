@@ -6,10 +6,10 @@ below is the C program to solve the dining-philosophers problem based on semapho
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <unistd.h>
-#include <pthread.h>
 #include <semaphore.h>
+#include <stdbool.h>
+#include <pthread.h>
 
 pthread_t philosophers[5];
 sem_t chopsticks[5];
@@ -19,21 +19,21 @@ void *philosopher(void *arg)
     int id = (int)arg;
     while (true)
     {
-        printf("Philosopher %d is thinking...\n", id);
-        usleep(rand() % 5000000);
+        printf("Philosopher %d is thinking...\n", id + 1);
+        sleep(rand() % 3);
         sem_wait(&chopsticks[id]); // Try to pick up left chopstick
-        printf("Philosopher %d picked up left chopstick\n", id);
-        usleep(1000);                        // Introduce a small delay to avoid deadlocks
+        printf("Philosopher %d picked up left chopstick\n", id + 1);
+        usleep(1000); // Introduce a small delay to avoid deadlocks
         sem_wait(&chopsticks[(id + 1) % 5]); // Try to pick up right chopstick
-        printf("Philosopher %d picked up right chopstick\n", id);
-        printf("Philosopher %d is having meal\n", id);
-        usleep(rand() % 5000000);
+        printf("Philosopher %d picked up right chopstick\n", id + 1);
+        printf("Philosopher %d is having meal\n", id + 1);
+        sleep(rand() % 2);
         sem_post(&chopsticks[id]); // Put down left chopstick
-        printf("Philosopher %d put down left chopstick\n", id);
+        printf("Philosopher %d put down left chopstick\n", id + 1);
         sem_post(&chopsticks[(id + 1) % 5]); // Put down right chopstick
-        printf("Philosopher %d put down right chopstick\n", id);
+        printf("Philosopher %d put down right chopstick\n", id + 1);
     }
-    printf("Philosopher %d has finished eating\n", id);
+    printf("Philosopher %d has finished eating\n", id + 1);
     return NULL;
 }
 
