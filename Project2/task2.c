@@ -21,7 +21,6 @@ void *philosopher(void *arg)
     {
         printf("Philosopher %d is thinking...\n", id);
         usleep(rand() % 5000000);
-
         sem_wait(&chopsticks[id]); // Try to pick up left chopstick
         printf("Philosopher %d picked up left chopstick\n", id);
         usleep(1000);                        // Introduce a small delay to avoid deadlocks
